@@ -261,13 +261,20 @@ func (m *Mysql) Unlock() error {
 	}
 
 	query := `SELECT RELEASE_LOCK(?)`
-	if _, err := m.conn.ExecContext(context.Background(), query, aid); err != nil {
+	var success *bool
+	if err := m.conn.QueryRowContext(context.Background(), query, aid).Scan(&success); err != nil {
 		return &database.Error{OrigErr: err, Query: []byte(query)}
 	}
 
 	// NOTE: RELEASE_LOCK could return NULL or (or 0 if the code is changed),
 	// in which case isLocked should be true until the timeout expires -- synchronizing
 	// these states is likely not worth trying to do; reconsider the necessity of isLocked.
+
+	if success == nil {
+		return database.Error{OrigErr: database.ErrNotLocked, Err: "can't unlock, named lock did not exist"}
+	} else if !(*success) {
+		return database.Error{OrigErr: database.ErrNotLocked, Err: "can't unlock, named lock established in different thread"}
+	}
 
 	m.isLocked = false
 	return nil
