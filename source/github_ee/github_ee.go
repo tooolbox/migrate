@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/golang-migrate/migrate/v4/source"
-	gh "github.com/golang-migrate/migrate/v4/source/github"
 	"github.com/google/go-github/github"
+	"github.com/tooolbox/migrate/v4/source"
+	gh "github.com/tooolbox/migrate/v4/source/github"
 )
 
 func init() {
